@@ -364,6 +364,7 @@ class SurfaceProfileApp:
             step = max(1, w // 200) 
             X, Y = np.meshgrid(np.arange(0, w, step), np.arange(0, h, step))
             Z = masked_depth[::step, ::step]
+            Z[Z < 1] = np.nan 
 
             # 4. Create Subplots (1 row, 2 columns)
             fig = plt.figure(figsize=(14, 6))
@@ -372,16 +373,17 @@ class SurfaceProfileApp:
             # Left Subplot: 2D Masked Intensity
             ax1 = fig.add_subplot(121)
             ax1.set_title("2D Surface profile")
-            im = ax1.imshow(masked_depth, cmap='viridis')
-            fig.colorbar(im, ax=ax1, shrink=0.5)
+            # im = ax1.imshow(masked_depth, cmap='plasma')
+            Zm = np.ma.masked_invalid(Z)
+            cp = ax1.contourf(X, Y, Zm, cmap="plasma", levels=20)
 
             # Right Subplot: 3D Surface
             ax2 = fig.add_subplot(122, projection='3d')
             ax2.set_title("3D Surface Profile")
-            surf = ax2.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none', antialiased=True)
-            ax2.set_xlabel("X")
-            ax2.set_ylabel("Y")
-            ax2.set_zlabel("Intensity")
+            surf = ax2.plot_surface(X, Y, Z, cmap='plasma', edgecolor='none', antialiased=True)
+            ax2.contourf(X, Y, Z, zdir="z", offset=np.nanmin(Z)-10, cmap="plasma", alpha=0.5)
+            ax2.grid(False)
+            # ax2.set_axis_off() 
             ax2.invert_yaxis() # Match image orientation
             fig.colorbar(surf, ax=ax2, shrink=0.6, aspect=10)
 
@@ -390,7 +392,6 @@ class SurfaceProfileApp:
 
         except Exception as e:
             messagebox.showerror("3D Error", f"Failed: {str(e)}")
-
 
     def run_depth_analysis(self, cropped_img_np):
             # FIX: Convert NumPy array to PIL Image before passing to pipeline
