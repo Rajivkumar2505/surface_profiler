@@ -361,13 +361,13 @@ class SurfaceProfileApp:
 
             # 3. Define Grid for 3D
             h, w = masked_depth.shape
-            step = max(1, w // 200) 
+            step = 5
             X, Y = np.meshgrid(np.arange(0, w, step), np.arange(0, h, step))
             Z = masked_depth[::step, ::step]
             Z[Z < 1] = np.nan 
 
             # 4. Create Subplots (1 row, 2 columns)
-            fig = plt.figure(figsize=(14, 6))
+            fig = plt.figure(figsize=(12, 6))
             fig.canvas.manager.set_window_title('Surface Profile')
 
             # Left Subplot: 2D Masked Intensity
@@ -376,13 +376,18 @@ class SurfaceProfileApp:
             # im = ax1.imshow(masked_depth, cmap='plasma')
             Zm = np.ma.masked_invalid(Z)
             cp = ax1.contourf(X, Y, Zm, cmap="plasma", levels=20)
+            ax1.set_box_aspect(1) 
 
             # Right Subplot: 3D Surface
             ax2 = fig.add_subplot(122, projection='3d')
             ax2.set_title("3D Surface Profile")
+            ax2.set_xticks([])
+            ax2.set_yticks([])
+            ax2.set_zticks([])
             surf = ax2.plot_surface(X, Y, Z, cmap='plasma', edgecolor='none', antialiased=True)
-            ax2.contourf(X, Y, Z, zdir="z", offset=np.nanmin(Z)-10, cmap="plasma", alpha=0.5)
+            ax2.contourf(X, Y, Z, zdir="z", offset=0, cmap="plasma", alpha=0.5)
             ax2.grid(False)
+
             # ax2.set_axis_off() 
             ax2.invert_yaxis() # Match image orientation
             fig.colorbar(surf, ax=ax2, shrink=0.6, aspect=10)
